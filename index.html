@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Grade Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --paper:   #faf6ef;
+      --paper2:  #f3ece0;
+      --ink:     #1c1710;
+      --ink2:    #4a3f2f;
+      --ink3:    #8c7d68;
+      --red:     #c0392b;
+      --blue:    #2471a3;
+      --rule:    rgba(100,80,50,0.15);
+      --shadow:  rgba(60,40,10,0.12);
+    }
+    body {
+      font-family: 'Lato', sans-serif;
+      background: #e0d5c5;
+      background-image: radial-gradient(ellipse at 20% 20%, #d9cfc0 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, #c9bfae 0%, transparent 60%);
+      min-height: 100vh;
+      padding: 48px 16px;
+      color: var(--ink);
+    }
+    .page { max-width: 660px; margin: 0 auto; }
+
+    /* Header */
+    .header { margin-bottom: 0; animation: rise 0.5s ease both; }
+    .header-top {
+      background: var(--red);
+      padding: 28px 36px 22px;
+      border-radius: 4px 4px 0 0;
+    }
+    .header-top h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -0.5px;
+      line-height: 1;
+    }
+    .header-top p {
+      color: rgba(255,255,255,0.72);
+      font-size: 0.88rem;
+      font-weight: 300;
+      margin-top: 5px;
+    }
+    .header-stripe {
+      height: 8px;
+      background: repeating-linear-gradient(90deg, #a93226 0px, #a93226 18px, #922b21 18px, #922b21 20px);
+    }
+
+    /* Sheet */
+    .sheet {
+      background: var(--paper);
+      box-shadow: 0 2px 0 #c4b89a, 0 4px 0 #b8ab8f, 0 14px 40px var(--shadow);
+      margin-bottom: 32px;
+      border-radius: 0 0 3px 3px;
+      animation: rise 0.5s 0.1s ease both;
+      opacity: 0;
+    }
+    .sheet-body {
+      padding: 32px 36px;
+      background-image: repeating-linear-gradient(transparent, transparent 31px, var(--rule) 31px, var(--rule) 32px);
+      background-position: 0 8px;
+    }
+    .section-label {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--ink3);
+      margin-bottom: 18px;
+    }
+    .col-head {
+      display: grid;
+      grid-template-columns: 1fr 88px 88px 36px;
+      gap: 10px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--ink);
+      margin-bottom: 4px;
+    }
+    .col-head span {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--ink2);
+    }
+    #subjects-list { display: flex; flex-direction: column; }
+    .subject-row {
+      display: grid;
+      grid-template-columns: 1fr 88px 88px 36px;
+      gap: 10px;
+      align-items: center;
+      border-bottom: 1px solid var(--rule);
+      animation: fadeIn 0.25s ease both;
+    }
+    input[type="text"], input[type="number"] {
+      background: transparent;
+      border: none;
+      border-bottom: 1.5px solid transparent;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.92rem;
+      color: var(--ink);
+      padding: 8px 4px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-bottom-color: var(--blue); }
+    input::placeholder { color: var(--ink3); font-style: italic; }
+    .del-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--ink3); font-size: 1rem; padding: 4px;
+      border-radius: 3px; transition: color 0.15s; line-height: 1;
+    }
+    .del-btn:hover { color: var(--red); }
+
+    /* Buttons */
+    .btn-row { display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
+    .btn {
+      font-family: 'Lato', sans-serif; font-weight: 700;
+      font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase;
+      cursor: pointer; border-radius: 3px; padding: 10px 20px;
+      transition: all 0.15s; border: 2px solid;
+    }
+    .btn-add { background: transparent; border-color: var(--blue); color: var(--blue); }
+    .btn-add:hover { background: var(--blue); color: #fff; }
+    .btn-reset { background: transparent; border-color: var(--ink3); color: var(--ink3); }
+    .btn-reset:hover { border-color: var(--red); color: var(--red); }
+    .btn-calc { flex: 1; background: var(--ink); border-color: var(--ink); color: var(--paper); font-size: 0.85rem; }
+    .btn-calc:hover { background: var(--ink2); border-color: var(--ink2); }
+
+    /* Result */
+    #result-card { display: none; animation: rise 0.4s ease both; }
+    .res-top {
+      background: var(--ink);
+      padding: 24px 36px;
+      border-radius: 3px 3px 0 0;
+      display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+    }
+    .res-top h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem; font-weight: 400;
+      color: rgba(250,246,239,0.6); flex: 1;
+    }
+    .big-grade {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.2rem; font-weight: 900; line-height: 1;
+    }
+    .stat-row {
+      display: flex; gap: 0;
+      background: var(--paper2);
+      border-bottom: 1px solid var(--rule);
+    }
+    .stat {
+      flex: 1; padding: 20px 24px;
+      border-right: 1px solid var(--rule);
+    }
+    .stat:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem; font-weight: 700; line-height: 1;
+      color: var(--ink);
+    }
+    .stat-lbl {
+      font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--ink3); margin-top: 4px;
+    }
+    .breakdown-wrap {
+      padding: 0 36px 28px;
+      background: var(--paper);
+      border-radius: 0 0 3px 3px;
+      box-shadow: 0 2px 0 #c4b89a, 0 4px 0 #b8ab8f, 0 14px 40px var(--shadow);
+    }
+    .breakdown-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+    .breakdown-table thead tr { border-bottom: 2px solid var(--ink); }
+    .breakdown-table th {
+      font-size: 0.67rem; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--ink2);
+      padding: 14px 0 8px; text-align: left;
+    }
+    .breakdown-table th:last-child, .breakdown-table td:last-child { text-align: right; }
+    .breakdown-table td {
+      padding: 10px 0; font-size: 0.9rem;
+      border-bottom: 1px solid var(--rule); vertical-align: middle;
+    }
+    .td-name { font-weight: 700; }
+    .td-score { color: var(--ink2); font-variant-numeric: tabular-nums; }
+    .bar-wrap { width: 110px; height: 5px; background: var(--rule); border-radius: 3px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+    .td-grade { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1rem; }
+
+    @keyframes rise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+    @media (max-width: 520px) {
+      .sheet-body, .breakdown-wrap, .res-top { padding-left: 18px; padding-right: 18px; }
+      .col-head, .subject-row { grid-template-columns: 1fr 70px 70px 30px; gap: 6px; }
+      .stat { padding: 16px 14px; }
+      .bar-wrap { width: 60px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="header-top">
+      <h1>Grade Calculator</h1>
+      <p>Enter your subjects and marks to find out how you did.</p>
+    </div>
+    <div class="header-stripe"></div>
+  </div>
+
+  <div class="sheet">
+    <div class="sheet-body">
+      <div class="section-label">Subjects &amp; Marks</div>
+      <div class="col-head">
+        <span>Subject</span>
+        <span>Obtained</span>
+        <span>Out of</span>
+        <span></span>
+      </div>
+      <div id="subjects-list"></div>
+      <div class="btn-row">
+        <button class="btn btn-add" onclick="addSubject()">+ Add Subject</button>
+        <button class="btn btn-reset" onclick="resetAll()">Reset</button>
+        <button class="btn btn-calc" onclick="calculate()">Calculate Results</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="result-card">
+    <div class="res-top">
+      <h2>Overall Result</h2>
+      <div class="big-grade" id="res-grade"></div>
+    </div>
+    <div class="stat-row" id="res-stats"></div>
+    <div class="breakdown-wrap">
+      <table class="breakdown-table">
+        <thead><tr><th>Subject</th><th>Score</th><th></th><th>Grade</th></tr></thead>
+        <tbody id="res-rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+<script>
+  let subjects = [];
+  function uid() { return Math.random().toString(36).slice(2,8); }
+
+  function getGrade(pct) {
+    if (pct >= 91) return { letter: 'O',   color: '#1e8449', gp: 10 };
+    if (pct >= 81) return { letter: 'A++', color: '#1a5276', gp: 9  };
+    if (pct >= 71) return { letter: 'A+',  color: '#2471a3', gp: 8  };
+    if (pct >= 61) return { letter: 'A',   color: '#5d6d7e', gp: 7  };
+    if (pct >= 51) return { letter: 'B++', color: '#d68910', gp: 6  };
+    if (pct >= 40) return { letter: 'B+',  color: '#ca6f1e', gp: 5  };
+    return                { letter: 'F',   color: '#c0392b', gp: 0  };
+  }
+
+  function renderSubjects() {
+    const list = document.getElementById('subjects-list');
+    list.innerHTML = '';
+    subjects.forEach(s => {
+      const row = document.createElement('div');
+      row.className = 'subject-row';
+      row.id = 'row-' + s.id;
+      row.innerHTML =
+        '<input type="text" placeholder="e.g. Mathematics" value="' + s.name + '" oninput="update(\'' + s.id + '\',\'name\',this.value)"/>' +
+        '<input type="number" placeholder="75" min="0" value="' + (s.marks !== '' ? s.marks : '') + '" oninput="update(\'' + s.id + '\',\'marks\',this.value)"/>' +
+        '<input type="number" placeholder="100" min="1" value="' + s.max + '" oninput="update(\'' + s.id + '\',\'max\',this.value)"/>' +
+        '<button class="del-btn" onclick="removeSubject(\'' + s.id + '\')">✕</button>';
+      list.appendChild(row);
+    });
+  }
+
+  function addSubject() {
+    subjects.push({ id: uid(), name: '', marks: '', max: 100 });
+    renderSubjects();
+    const rows = document.querySelectorAll('.subject-row');
+    rows[rows.length - 1]?.querySelector('input').focus();
+  }
+
+  function removeSubject(id) {
+    subjects = subjects.filter(s => s.id !== id);
+    renderSubjects();
+  }
+
+  function update(id, field, val) {
+    const s = subjects.find(s => s.id === id);
+    if (s) s[field] = field === 'name' ? val : (val === '' ? '' : parseFloat(val));
+  }
+
+  function syncFromDOM() {
+    document.querySelectorAll('.subject-row').forEach(row => {
+      const [ni, mi, xi] = row.querySelectorAll('input');
+      const id = row.id.replace('row-', '');
+      const s = subjects.find(s => s.id === id);
+      if (s) {
+        s.name  = ni.value.trim();
+        s.marks = mi.value === '' ? '' : parseFloat(mi.value);
+        s.max   = xi.value === '' ? 100 : parseFloat(xi.value);
+      }
+    });
+  }
+
+  function resetAll() {
+    subjects = [];
+    initSubjects();
+    document.getElementById('result-card').style.display = 'none';
+  }
+
+  function calculate() {
+    syncFromDOM();
+    const valid = subjects.filter(s => s.name && s.max > 0 && s.marks !== '');
+    if (!valid.length) { alert('Please fill in at least one subject.'); return; }
+
+    const totalMarks = valid.reduce((a,s) => a + s.marks, 0);
+    const totalMax   = valid.reduce((a,s) => a + s.max,   0);
+    const pct        = (totalMarks / totalMax) * 100;
+    const cgpa       = valid.reduce((a,s) => a + getGrade((s.marks/s.max)*100).gp, 0) / valid.length;
+    const overall    = getGrade(pct);
+
+    const gradeEl = document.getElementById('res-grade');
+    gradeEl.textContent = overall.letter;
+    gradeEl.style.color = overall.color;
+
+    document.getElementById('res-stats').innerHTML =
+      '<div class="stat"><div class="stat-num">' + pct.toFixed(1) + '%</div><div class="stat-lbl">Percentage</div></div>' +
+      '<div class="stat"><div class="stat-num">' + totalMarks + ' / ' + totalMax + '</div><div class="stat-lbl">Total Marks</div></div>' +
+      '<div class="stat"><div class="stat-num">' + cgpa.toFixed(2) + '</div><div class="stat-lbl">CGPA</div></div>' +
+      '<div class="stat"><div class="stat-num">' + valid.length + '</div><div class="stat-lbl">Subjects</div></div>';
+
+    document.getElementById('res-rows').innerHTML = valid.map(s => {
+      const sp = (s.marks / s.max) * 100;
+      const sg = getGrade(sp);
+      return '<tr>' +
+        '<td class="td-name">' + s.name + '</td>' +
+        '<td class="td-score">' + s.marks + ' / ' + s.max + '</td>' +
+        '<td><div class="bar-wrap"><div class="bar-fill" style="width:' + sp + '%;background:' + sg.color + '"></div></div></td>' +
+        '<td class="td-grade" style="color:' + sg.color + '">' + sg.letter + '</td>' +
+        '</tr>';
+    }).join('');
+
+    const rc = document.getElementById('result-card');
+    rc.style.display = 'block';
+    rc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function initSubjects() {
+    ['Mathematics', 'Physics', 'Programming'].forEach(name => {
+      subjects.push({ id: uid(), name, marks: '', max: 100 });
+    });
+    renderSubjects();
+  }
+
+  initSubjects();
+</script>
+</body>
+</html>
